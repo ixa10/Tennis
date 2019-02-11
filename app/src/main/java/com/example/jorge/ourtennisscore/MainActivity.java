@@ -1,5 +1,6 @@
 package com.example.jorge.ourtennisscore;
 
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,13 +18,19 @@ public class MainActivity extends AppCompatActivity implements IView {
     private TextView game2;
     private TextView points1;
     private TextView points2;
-    private Button pA;
-    private Button pB;
+    public static Button pA;
+    public static Button pB;
     private Button reset;
     private RadioButton bo3;
     private RadioButton bo5;
 
     private Presenter presenter;
+
+
+
+    private boolean enabled;
+
+    public static  final String MODEL = "model";
 
 
     @Override
@@ -44,11 +51,17 @@ public class MainActivity extends AppCompatActivity implements IView {
         reset = findViewById(R.id.reset);
         bo3 = findViewById(R.id.bo3);
         bo5 = findViewById(R.id.bo5);
+        enabled = true;
 
         pA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.onPAPressed();
+                if (enabled){
+                    bo3.setEnabled(false);
+                    bo5.setEnabled(false);
+                    enabled=false;
+                }
 
             }
         });
@@ -57,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements IView {
             @Override
             public void onClick(View v) {
                 presenter.onPBPressed();
+                if (enabled){
+                    bo3.setEnabled(false);
+                    bo5.setEnabled(false);
+                    enabled=false;
+                }
 
             }
         });
@@ -64,6 +82,14 @@ public class MainActivity extends AppCompatActivity implements IView {
         reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                presenter.onResetPressed();
+                if (!enabled){
+                    bo3.setEnabled(true);
+                    bo5.setEnabled(true);
+                    pA.setEnabled(true);
+                    pB.setEnabled(true);
+                    enabled=true;
+                }
 
             }
         });
@@ -72,28 +98,49 @@ public class MainActivity extends AppCompatActivity implements IView {
             @Override
             public void onClick(View v) {
 
+                presenter.onBO3Pressed();
+
+
             }
         });
 
         bo5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                presenter.onBO5Pressed();
+
 
             }
         });
 
 
-        presenter = new Presenter( new Model(), this);
+        if (savedInstanceState == null){
+            presenter = new Presenter( new Model(), this);
+        }
+
+        else {
+            Model model = savedInstanceState.getParcelable(MODEL);
+            presenter = new Presenter( model, this);
+        }
+
+
+
 
 
 
 
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {        //llama cuando ha de guardarse (llamadas, giro tlf)
+        super.onSaveInstanceState(outState);
+        presenter.saveState(outState);
+    }
 
     @Override
     public void displayPS(String ps1, String ps2) {
-
+        this.ps1.setText(ps1);
+        this.ps2.setText(ps2);
     }
 
     @Override
@@ -105,6 +152,8 @@ public class MainActivity extends AppCompatActivity implements IView {
 
     @Override
     public void displaySets(String sets1, String sets2) {
+        this.sets1.setText(sets1);
+        this.sets2.setText(sets2);
 
     }
 
@@ -113,4 +162,6 @@ public class MainActivity extends AppCompatActivity implements IView {
         this.points1.setText(points1);
         this.points2.setText(points2);
     }
+
+
 }
